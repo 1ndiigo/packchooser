@@ -1,0 +1,14 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "me.cobble.datapackchooser.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [
+  ],
+  "client": [
+    "PackScreenMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
