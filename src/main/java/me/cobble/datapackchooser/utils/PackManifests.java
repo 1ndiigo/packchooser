@@ -1,9 +1,7 @@
 package me.cobble.datapackchooser.utils;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonSyntaxException;
+import com.google.gson.*;
+import me.cobble.datapackchooser.DatapackChooser;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -27,5 +25,14 @@ public class PackManifests {
             }
         }
         return null;
+    }
+
+    public static JsonObject getByName(String name) {
+        for (JsonElement object : DatapackChooser.getManifest().get("packs").getAsJsonArray()) {
+            if(object.getAsJsonObject().get("name").getAsString().equalsIgnoreCase(name)) {
+                return object.getAsJsonObject();
+            }
+        }
+        return new JsonObject();
     }
 }

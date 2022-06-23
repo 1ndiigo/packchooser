@@ -47,9 +47,7 @@ public class MarketplaceRoot extends LightweightGuiDescription {
             JsonObject object = manifest.get("packs").getAsJsonArray().get(i).getAsJsonObject();
             WButton name = new WButton(Text.of(object.get("name").getAsString()));
             name.setSize(140, 20);
-            name.setOnClick(() -> {
-                packDetails(root, name.getLabel(), file);
-            });
+            name.setOnClick(() -> packDetails(root, name.getLabel(), file));
 //            WLabel description;
 //            WLabel url;
 //            if(object.has("description")) {
@@ -85,7 +83,7 @@ public class MarketplaceRoot extends LightweightGuiDescription {
                     OkHttpClient client = new OkHttpClient();
                     try (FileDownloader downloader = new FileDownloader(client)) {
                         System.out.println(file.toString());
-                        downloader.download(pack.getAsJsonObject().get("url").getAsString(), file, name);
+                        downloader.downloadDatapack(pack.getAsJsonObject().get("pack_url").getAsString(), file, name);
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
