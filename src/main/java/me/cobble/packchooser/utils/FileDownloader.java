@@ -1,4 +1,4 @@
-package me.cobble.datapackchooser.utils;
+package me.cobble.packchooser.utils;
 
 import net.minecraft.client.MinecraftClient;
 import okhttp3.*;
@@ -40,7 +40,7 @@ public class FileDownloader implements AutoCloseable {
 
     public void downloadResourcepack(String url, String worldName) {
 
-        if(url.equalsIgnoreCase("")) return;
+        if (url.equalsIgnoreCase("")) return;
 
         Request request = new Request.Builder().url(url).build();
         client.newCall(request).enqueue(new Callback() {

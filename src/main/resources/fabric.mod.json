@@ -1,20 +1,20 @@
 {
   "schemaVersion": 1,
-  "id": "datapackchooser",
+  "id": "packchooser",
   "version": "${version}",
-  "name": "Datapack Chooser",
+  "name": "Pack Chooser",
   "description": "",
   "authors": [],
   "contact": {},
   "license": "MIT",
-  "icon": "assets/datapackchooser/icon.png",
+  "icon": "assets/packchooser/icon.png",
   "environment": "*",
   "entrypoints": {
     "client": [
-      "me.cobble.datapackchooser.client.DatapackChooserClient"
+      "me.cobble.packchooser.client.DatapackChooserClient"
     ],
     "main": [
-      "me.cobble.datapackchooser.DatapackChooser"
+      "me.cobble.packchooser.DatapackChooser"
     ]
   },
   "mixins": [

@@ -1,8 +1,8 @@
-package me.cobble.datapackchooser.mixin;
+package me.cobble.packchooser.mixin;
 
 import com.mojang.datafixers.DataFixer;
-import me.cobble.datapackchooser.utils.FileDownloader;
-import me.cobble.datapackchooser.utils.PackManifests;
+import me.cobble.packchooser.utils.FileDownloader;
+import me.cobble.packchooser.utils.PackManifests;
 import net.minecraft.resource.ResourcePackManager;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.SaveLoader;

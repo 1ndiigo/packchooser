@@ -1,67 +1,86 @@
-package me.cobble.datapackchooser.client.menus;
+package me.cobble.packchooser.client.menus;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import io.github.cottonmc.cotton.gui.client.BackgroundPainter;
 import io.github.cottonmc.cotton.gui.client.LightweightGuiDescription;
 import io.github.cottonmc.cotton.gui.widget.*;
 import io.github.cottonmc.cotton.gui.widget.data.HorizontalAlignment;
 import io.github.cottonmc.cotton.gui.widget.data.Insets;
-import me.cobble.datapackchooser.DatapackChooser;
-import me.cobble.datapackchooser.utils.FileDownloader;
+import io.github.cottonmc.cotton.gui.widget.icon.TextureIcon;
+import me.cobble.packchooser.DatapackChooser;
+import me.cobble.packchooser.utils.FileDownloader;
+import me.cobble.packchooser.utils.PackManifests;
 import net.fabricmc.fabric.api.util.TriState;
 import net.minecraft.screen.ScreenTexts;
 import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 import okhttp3.OkHttpClient;
 
 import java.io.File;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class MarketplaceRoot extends LightweightGuiDescription {
 
-    WGridPanel detailsPanel = new WGridPanel();
+    int GRID_CONSTANT = MarketplaceMenuContainer.GRID_CONSTANT;
+    WGridPanel detailsPanel = new WGridPanel(GRID_CONSTANT);
+    JsonArray manifestCopy = DatapackChooser.getManifest().get("packs").getAsJsonArray();
 
     public MarketplaceRoot(File file) {
-        detailsPanel.setSize(7 * 18, 9 * 18);
+        detailsPanel.setSize(7 * GRID_CONSTANT, 9 * GRID_CONSTANT);
 
-        WGridPanel root = new WGridPanel();
-        WScrollPanel scrollPanel = new WScrollPanel(listFromManifest(root, file));
+        WGridPanel root = new WGridPanel(GRID_CONSTANT);
+        final WScrollPanel[] scrollPanel = {new WScrollPanel(listFromManifest(root, file, manifestCopy))};
         WButton doneButton = new WButton(ScreenTexts.DONE);
+        WButton searchButton = new WButton(new TextureIcon(new Identifier("minecraft", "textures/mob_effect/mining_fatigue.png")));
+        WTextField textField = new WTextField(Text.of("Search"));
 
         doneButton.setOnClick(MarketplaceMenuContainer::closeScreen);
 
-        setRootPanel(root);
-        root.setInsets(Insets.ROOT_PANEL).setSize(300, 200);
+        textField.setSize(5 * GRID_CONSTANT, GRID_CONSTANT);
+        searchButton.setSize(20, GRID_CONSTANT);
 
-        scrollPanel.setScrollingVertically(TriState.TRUE);
-        scrollPanel.setScrollingHorizontally(TriState.FALSE);
-        root.add(scrollPanel, 0, 0, 7, 9);
+        setRootPanel(root);
+        root.setInsets(Insets.ROOT_PANEL);
+        root.setSize(300, 200);
+        root.setBackgroundPainter(BackgroundPainter.createColorful(0x363636));
+        root.setHost(this);
+
+        textField.setHost(this);
+        textField.requestFocus();
+
+        searchButton.setOnClick(() -> {
+            manifestCopy = PackManifests.searchSimilar(textField.getText());
+            root.remove(scrollPanel[0]);
+            scrollPanel[0] = new WScrollPanel(listFromManifest(root, file, manifestCopy));
+            scrollPanel[0].setScrollingVertically(TriState.TRUE);
+            scrollPanel[0].setScrollingHorizontally(TriState.FALSE);
+            root.add(scrollPanel[0], 0, 2, 8, 7);
+        });
+
+        scrollPanel[0].setScrollingVertically(TriState.TRUE);
+        scrollPanel[0].setScrollingHorizontally(TriState.FALSE);
+
+        root.add(textField, 0, 0, 6, 1);
+        root.add(scrollPanel[0], 0, 2, 8, 7);
+        root.add(searchButton, 6, 0, 1, 1);
         root.add(doneButton, 0, 10, 16, 1);
 
         root.validate(this);
     }
 
-    private WPanel listFromManifest(WGridPanel root, File file) {
-        JsonObject manifest = DatapackChooser.getManifest();
+
+    private WPanel listFromManifest(WGridPanel root, File file, JsonArray manifest) {
         WGridPanel panel = new WGridPanel();
-        for (int i = 0; i < manifest.get("packs").getAsJsonArray().size(); i++) {
-            JsonObject object = manifest.get("packs").getAsJsonArray().get(i).getAsJsonObject();
+
+        for (int i = 0; i < manifest.size(); i++) {
+            JsonObject object = manifest.get(i).getAsJsonObject();
             WButton name = new WButton(Text.of(object.get("name").getAsString()));
-            name.setSize(140, 20);
+            name.setSize(6 * GRID_CONSTANT, GRID_CONSTANT);
             name.setOnClick(() -> packDetails(root, name.getLabel(), file));
-//            WLabel description;
-//            WLabel url;
-//            if(object.has("description")) {
-//                description = new WLabel(Text.of(object.get("description").getAsString()));
-//            } else {
-//                description = new WLabel(Text.of("No description provided"));
-//            }
-//
-//            if(object.has("url")) {
-//                url = new WLabel(Text.of(object.get("url").getAsString()));
-//            } else {
-//                url = new WLabel(Text.of("No URL provided"));
-//            }
-            panel.add(name, 0, i, 7, 1);
+            panel.add(name, 0, i, 8, 1);
         }
         return panel;
     }
@@ -77,7 +96,7 @@ public class MarketplaceRoot extends LightweightGuiDescription {
                 WLabel title = new WLabel(label);
                 WButton download = new WButton(Text.of("Download"));
 
-                download.setSize(7 * 18, 18);
+                download.setSize(7 * GRID_CONSTANT, GRID_CONSTANT);
                 download.setAlignment(HorizontalAlignment.CENTER);
                 download.setOnClick(() -> {
                     OkHttpClient client = new OkHttpClient();
