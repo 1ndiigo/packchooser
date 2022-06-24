@@ -10,13 +10,13 @@ import net.minecraft.server.WorldGenerationProgressListenerFactory;
 import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.util.ApiServices;
 import net.minecraft.world.level.storage.LevelStorage;
-import okhttp3.OkHttpClient;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.net.Proxy;
+import java.net.http.HttpClient;
 
 @Mixin(IntegratedServer.class)
 public abstract class IntegratedServerMixin extends MinecraftServer {
@@ -27,7 +27,7 @@ public abstract class IntegratedServerMixin extends MinecraftServer {
 
     @Inject(at = @At("RETURN"), method = "setupServer")
     private void addResources(CallbackInfoReturnable<Boolean> cir) {
-        FileDownloader downloader = new FileDownloader(new OkHttpClient());
+        FileDownloader downloader = new FileDownloader(HttpClient.newHttpClient());
         downloader.downloadResourcepack(PackManifests.getByName("More TNT").get("rp_url").getAsString(), this.getSaveProperties().getLevelName());
     }
 }

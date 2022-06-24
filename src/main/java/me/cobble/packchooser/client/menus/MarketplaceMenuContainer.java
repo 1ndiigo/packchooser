@@ -14,6 +14,7 @@ public class MarketplaceMenuContainer extends CottonClientScreen {
     public MarketplaceMenuContainer(Screen parent, GuiDescription description) {
         super(description);
         MarketplaceMenuContainer.parent = parent;
+
     }
 
 

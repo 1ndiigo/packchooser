@@ -15,12 +15,11 @@ import net.fabricmc.fabric.api.util.TriState;
 import net.minecraft.screen.ScreenTexts;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
-import okhttp3.OkHttpClient;
 
 import java.io.File;
+import java.net.http.HttpClient;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class MarketplaceRoot extends LightweightGuiDescription {
 
@@ -28,10 +27,10 @@ public class MarketplaceRoot extends LightweightGuiDescription {
     WGridPanel detailsPanel = new WGridPanel(GRID_CONSTANT);
     JsonArray manifestCopy = DatapackChooser.getManifest().get("packs").getAsJsonArray();
 
+    WGridPanel root = new WGridPanel(GRID_CONSTANT);
     public MarketplaceRoot(File file) {
         detailsPanel.setSize(7 * GRID_CONSTANT, 9 * GRID_CONSTANT);
 
-        WGridPanel root = new WGridPanel(GRID_CONSTANT);
         final WScrollPanel[] scrollPanel = {new WScrollPanel(listFromManifest(root, file, manifestCopy))};
         WButton doneButton = new WButton(ScreenTexts.DONE);
         WButton searchButton = new WButton(new TextureIcon(new Identifier("minecraft", "textures/mob_effect/mining_fatigue.png")));
@@ -40,7 +39,7 @@ public class MarketplaceRoot extends LightweightGuiDescription {
         doneButton.setOnClick(MarketplaceMenuContainer::closeScreen);
 
         textField.setSize(5 * GRID_CONSTANT, GRID_CONSTANT);
-        searchButton.setSize(20, GRID_CONSTANT);
+        searchButton.setSize(GRID_CONSTANT, GRID_CONSTANT);
 
         setRootPanel(root);
         root.setInsets(Insets.ROOT_PANEL);
@@ -65,7 +64,7 @@ public class MarketplaceRoot extends LightweightGuiDescription {
 
         root.add(textField, 0, 0, 6, 1);
         root.add(scrollPanel[0], 0, 2, 8, 7);
-        root.add(searchButton, 6, 0, 1, 1);
+        root.add(searchButton, 7, 0, 1, 1);
         root.add(doneButton, 0, 10, 16, 1);
 
         root.validate(this);
@@ -77,10 +76,9 @@ public class MarketplaceRoot extends LightweightGuiDescription {
 
         for (int i = 0; i < manifest.size(); i++) {
             JsonObject object = manifest.get(i).getAsJsonObject();
-            WButton name = new WButton(Text.of(object.get("name").getAsString()));
-            name.setSize(6 * GRID_CONSTANT, GRID_CONSTANT);
-            name.setOnClick(() -> packDetails(root, name.getLabel(), file));
-            panel.add(name, 0, i, 8, 1);
+            WButton button = new WButton(Text.of(object.get("name").getAsString()));
+            button.setOnClick(() -> packDetails(root, button.getLabel(), file));
+            panel.add(button, 0, i, 8, 1);
         }
         return panel;
     }
@@ -96,10 +94,12 @@ public class MarketplaceRoot extends LightweightGuiDescription {
                 WLabel title = new WLabel(label);
                 WButton download = new WButton(Text.of("Download"));
 
+                title.setColor(0xFFF3F3F3);
+
                 download.setSize(7 * GRID_CONSTANT, GRID_CONSTANT);
                 download.setAlignment(HorizontalAlignment.CENTER);
                 download.setOnClick(() -> {
-                    OkHttpClient client = new OkHttpClient();
+                    HttpClient client = HttpClient.newHttpClient();
                     try (FileDownloader downloader = new FileDownloader(client)) {
                         System.out.println(file.toString());
                         downloader.downloadDatapack(pack.getAsJsonObject().get("pack_url").getAsString(), file, name);
@@ -114,6 +114,7 @@ public class MarketplaceRoot extends LightweightGuiDescription {
 
                 Arrays.stream(pack.getAsJsonObject().get("description").getAsString().split("\n")).toList().forEach(string -> {
                     WLabel description = new WLabel(Text.of(string));
+                    description.setColor(0xFFF3F3F3);
                     detailsPanel.add(description, 0, y.get(), 7, 3);
                     y.getAndIncrement();
                 });
@@ -123,5 +124,10 @@ public class MarketplaceRoot extends LightweightGuiDescription {
         });
 
         root.add(detailsPanel, 8, 0, 8, 9);
+    }
+
+    @Override
+    public void addPainters() {
+        root.setBackgroundPainter(BackgroundPainter.createColorful(0xCC363636));
     }
 }

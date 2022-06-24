@@ -3,14 +3,15 @@ package me.cobble.packchooser.utils;
 import com.google.gson.*;
 import me.cobble.packchooser.DatapackChooser;
 import net.fabricmc.loader.api.FabricLoader;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
 
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
@@ -32,13 +33,13 @@ public class PackManifests {
         } else {
 
             try {
-                JsonObject generatedManifestFile = gson.fromJson(new FileReader(manifestFile), JsonObject.class);
-                long timeGenerated = generatedManifestFile.get("timeDownloaded").getAsLong();
+                JsonObject readManifest = gson.fromJson(new FileReader(manifestFile), JsonObject.class);
+                long timeGenerated = readManifest.get("timeDownloaded").getAsLong();
                 if (Duration.between(Instant.ofEpochMilli(timeGenerated), Instant.now()).toDays() > 30) {
                     manifestFile.delete();
                     fetchManifest();
                 }
-                return generatedManifestFile;
+                return readManifest;
 
             } catch (IOException e) {
                 e.printStackTrace();
@@ -78,12 +79,12 @@ public class PackManifests {
     }
 
     private static void fetchManifest() {
-        OkHttpClient client = new OkHttpClient();
-        Request request = new Request.Builder()
-                .url("https://raw.githubusercontent.com/1ndiigo/packchooser-manifests/main/mainfest.json")
+        HttpClient client = HttpClient.newHttpClient();
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("https://raw.githubusercontent.com/1ndiigo/packchooser-manifests/main/mainfest.json"))
                 .build();
-        try (Response response = client.newCall(request).execute()) {
-            JsonObject object = gson.fromJson(response.body().string(), JsonObject.class);
+        client.sendAsync(request, HttpResponse.BodyHandlers.ofString()).thenApply(HttpResponse::body).thenAccept(body -> {
+            JsonObject object = gson.fromJson(body, JsonObject.class);
             object.addProperty("timeDownloaded", Instant.now(Clock.systemUTC()).toEpochMilli());
             try {
                 manifestFile = new File(FabricLoader.getInstance().getConfigDir().toString() + "/" + DatapackChooser.getModId());
@@ -97,11 +98,6 @@ public class PackManifests {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        } catch (JsonSyntaxException | IOException e) {
-            e.printStackTrace();
-            if (e instanceof JsonSyntaxException) {
-                System.out.println("You are either offline or the manifest is bad, if the problem continues while online please file a issue https://github.com/1ndiigo/packchooser-manifests/issues");
-            }
-        }
+        });
     }
 }

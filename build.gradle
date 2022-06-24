@@ -1,6 +1,7 @@
 plugins {
     id 'fabric-loom' version '0.12-SNAPSHOT'
     id 'maven-publish'
+    id "com.modrinth.minotaur" version "2.+"
 }
 
 version = project.mod_version
@@ -28,7 +29,7 @@ dependencies {
     // Fabric API. This is technically optional, but you probably want it anyway.
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
     modImplementation include("io.github.cottonmc:LibGui:6.0.0+1.19")
-    implementation("com.squareup.okhttp3:okhttp:4.10.0")
+
 }
 
 processResources {
@@ -67,6 +68,24 @@ java {
 jar {
     from("LICENSE") {
         rename { "${it}_${project.archivesBaseName}" }
+    }
+}
+
+modrinth {
+    BufferedReader br = new BufferedReader(new InputStreamReader(System.in))
+    System.out.println("please enter token")
+    token = br.readLine()
+    projectId = "AABBCCDD"
+    versionNumber = "1.0.0" // You don't need to set this manually. Will fail if Modrinth has this version already
+    versionType = "beta" // This is the default -- can also be `beta` or `alpha`
+    uploadFile = remapJar // With Loom, this MUST be set to `remapJar` instead of `jar`!
+    gameVersions = ["1.19"] // Must be an array, even with only one version
+    loaders = ["fabric"] // Must also be an array - no need to specify this if you're using Loom or ForgeGradle
+    dependencies { // A special DSL for creating dependencies
+        // scope.type
+        // The scope can be `required`, `optional`, or `incompatible`
+        // The type can either be `project` or `version`
+        required.project "P7dR8mSH" // Creates a new required dependency on Fabric API
     }
 }
 
