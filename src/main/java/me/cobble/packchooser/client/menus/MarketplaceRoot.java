@@ -100,7 +100,8 @@ public class MarketplaceRoot extends LightweightGuiDescription {
                 download.setAlignment(HorizontalAlignment.CENTER);
                 download.setOnClick(() -> {
                     HttpClient client = HttpClient.newHttpClient();
-                    try (FileDownloader downloader = new FileDownloader(client)) {
+                    try {
+                        FileDownloader downloader = new FileDownloader(client);
                         System.out.println(file.toString());
                         downloader.downloadDatapack(pack.getAsJsonObject().get("pack_url").getAsString(), file, name);
                     } catch (Exception e) {
@@ -110,16 +111,11 @@ public class MarketplaceRoot extends LightweightGuiDescription {
 
                 detailsPanel.add(title, 0, 0, 7, 1);
 
-                AtomicInteger y = new AtomicInteger(2);
+                WText text = new WText(Text.of(pack.getAsJsonObject().get("description").getAsString()));
+                text.setColor(0xFFF3F3F3);
 
-                Arrays.stream(pack.getAsJsonObject().get("description").getAsString().split("\n")).toList().forEach(string -> {
-                    WLabel description = new WLabel(Text.of(string));
-                    description.setColor(0xFFF3F3F3);
-                    detailsPanel.add(description, 0, y.get(), 7, 3);
-                    y.getAndIncrement();
-                });
-
-                detailsPanel.add(download, 0, y.get() + 1, 7, 1);
+                detailsPanel.add(text, 0, 2, 7, 3);
+                detailsPanel.add(download, 0, 3, 7, 1);
             }
         });
 
