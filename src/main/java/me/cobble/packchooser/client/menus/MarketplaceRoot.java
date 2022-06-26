@@ -18,13 +18,12 @@ import net.minecraft.util.Identifier;
 
 import java.io.File;
 import java.net.http.HttpClient;
-import java.util.Arrays;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class MarketplaceRoot extends LightweightGuiDescription {
 
     int GRID_CONSTANT = MarketplaceMenuContainer.GRID_CONSTANT;
     WGridPanel detailsPanel = new WGridPanel(GRID_CONSTANT);
+    WScrollPanel detailsRoot = new WScrollPanel(detailsPanel);
     JsonArray manifestCopy = DatapackChooser.getManifest().get("packs").getAsJsonArray();
 
     WGridPanel root = new WGridPanel(GRID_CONSTANT);
@@ -44,7 +43,6 @@ public class MarketplaceRoot extends LightweightGuiDescription {
         setRootPanel(root);
         root.setInsets(Insets.ROOT_PANEL);
         root.setSize(300, 200);
-        root.setBackgroundPainter(BackgroundPainter.createColorful(0x363636));
         root.setHost(this);
 
         textField.setHost(this);
@@ -86,17 +84,18 @@ public class MarketplaceRoot extends LightweightGuiDescription {
     private void packDetails(WGridPanel root, Text label, File file) {
         String name = label.getString();
 
-        root.remove(detailsPanel);
+        root.remove(detailsRoot);
         detailsPanel = new WGridPanel();
+        detailsRoot = new WScrollPanel(detailsPanel);
 
         DatapackChooser.getManifest().get("packs").getAsJsonArray().forEach(pack -> {
             if (pack.getAsJsonObject().get("name").getAsString().equalsIgnoreCase(name)) {
                 WLabel title = new WLabel(label);
-                WButton download = new WButton(Text.of("Download"));
-
+                WButton download = new WButton(Text.of("↓"));
+                WText text = new WText(Text.of(pack.getAsJsonObject().get("description").getAsString()));
+                text.setColor(0xFFF3F3F3);
                 title.setColor(0xFFF3F3F3);
 
-                download.setSize(7 * GRID_CONSTANT, GRID_CONSTANT);
                 download.setAlignment(HorizontalAlignment.CENTER);
                 download.setOnClick(() -> {
                     HttpClient client = HttpClient.newHttpClient();
@@ -109,17 +108,15 @@ public class MarketplaceRoot extends LightweightGuiDescription {
                     }
                 });
 
+                download.addTooltip(new TooltipBuilder().add(Text.of("Click to download the pack!")));
+
                 detailsPanel.add(title, 0, 0, 7, 1);
-
-                WText text = new WText(Text.of(pack.getAsJsonObject().get("description").getAsString()));
-                text.setColor(0xFFF3F3F3);
-
-                detailsPanel.add(text, 0, 2, 7, 3);
-                detailsPanel.add(download, 0, 3, 7, 1);
+                detailsPanel.add(text, 0, 2, 7, 8);
+                detailsPanel.add(download, 6, 0, 1, 1);
             }
         });
 
-        root.add(detailsPanel, 8, 0, 8, 9);
+        root.add(detailsRoot, 9, 0, 8, 9);
     }
 
     @Override
