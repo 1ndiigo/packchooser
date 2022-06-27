@@ -74,7 +74,7 @@ jar {
 modrinth {
     BufferedReader br = new BufferedReader(new InputStreamReader(System.in))
     System.out.println("please enter token")
-    token = br.readLine()
+    token = "" // br.readLine()
     projectId = "AABBCCDD"
     versionNumber = "1.0.0" // You don't need to set this manually. Will fail if Modrinth has this version already
     versionType = "beta" // This is the default -- can also be `beta` or `alpha`

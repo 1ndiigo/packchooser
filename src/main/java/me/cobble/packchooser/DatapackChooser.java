@@ -25,5 +25,7 @@ public class DatapackChooser implements ModInitializer {
         return MOD_ID;
     }
 
-    public static Logger getLogger() { return LOGGER; }
+    public static Logger getLogger() {
+        return LOGGER;
+    }
 }

@@ -17,7 +17,6 @@ public class MarketplaceMenuContainer extends CottonClientScreen {
 
     }
 
-
     public static void closeScreen() {
         MinecraftClient.getInstance().setScreen(parent);
     }

@@ -3,6 +3,7 @@ package me.cobble.packchooser.utils;
 import com.google.gson.*;
 import me.cobble.packchooser.DatapackChooser;
 import net.fabricmc.loader.api.FabricLoader;
+import org.slf4j.Logger;
 
 import java.io.File;
 import java.io.FileReader;
@@ -15,11 +16,15 @@ import java.net.http.HttpResponse;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.ZoneOffset;
 
 public class PackManifests {
 
+    // TODO: Clean all the code up
+
     private static File manifestFile = new File(FabricLoader.getInstance().getConfigDir().toString() + "/" + DatapackChooser.getModId() + "/manifest.json");
     private static final Gson gson = new GsonBuilder().disableHtmlEscaping().setLenient().create();
+    private static final Logger logger = DatapackChooser.getLogger();
 
     /**
      * Gets manifest
@@ -30,21 +35,21 @@ public class PackManifests {
 
         if (!manifestFile.exists()) {
             fetchManifest();
-        } else {
-
-            try {
-                JsonObject readManifest = gson.fromJson(new FileReader(manifestFile), JsonObject.class);
-                long timeGenerated = readManifest.get("timeDownloaded").getAsLong();
-                if (Duration.between(Instant.ofEpochMilli(timeGenerated), Instant.now()).toDays() > 30) {
-                    manifestFile.delete();
-                    fetchManifest();
-                }
-                return readManifest;
-
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         }
+
+        try {
+            JsonObject readManifest = gson.fromJson(new FileReader(manifestFile), JsonObject.class);
+            long timeGenerated = readManifest.get("time_downloaded").getAsLong();
+            if (Duration.between(Instant.ofEpochMilli(timeGenerated), Instant.now().atOffset(ZoneOffset.UTC)).toDays() > 30) {
+                manifestFile.delete();
+                fetchManifest();
+            }
+            return readManifest;
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         return null;
     }
 
@@ -78,19 +83,27 @@ public class PackManifests {
         return array;
     }
 
-    private static void fetchManifest() {
+    public static void fetchManifest() {
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("https://raw.githubusercontent.com/1ndiigo/packchooser-manifests/main/mainfest.json"))
                 .build();
-        client.sendAsync(request, HttpResponse.BodyHandlers.ofString()).thenApply(HttpResponse::body).thenAccept(body -> {
+
+        try {
+            manifestFile = new File(FabricLoader.getInstance().getConfigDir().toString() + "/" + DatapackChooser.getModId());
+            manifestFile.mkdirs();
+            manifestFile = new File(FabricLoader.getInstance().getConfigDir().toString() + "/" + DatapackChooser.getModId() + "/manifest.json");
+            manifestFile.createNewFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        client.sendAsync(request, HttpResponse.BodyHandlers.ofString()).thenApply(HttpResponse::body).thenAcceptAsync(body -> {
+            logger.info("Fetching manifests...");
+
             JsonObject object = gson.fromJson(body, JsonObject.class);
-            object.addProperty("timeDownloaded", Instant.now(Clock.systemUTC()).toEpochMilli());
+            object.addProperty("time_downloaded", Instant.now(Clock.systemUTC()).toEpochMilli());
             try {
-                manifestFile = new File(FabricLoader.getInstance().getConfigDir().toString() + "/" + DatapackChooser.getModId());
-                manifestFile.mkdirs();
-                manifestFile = new File(FabricLoader.getInstance().getConfigDir().toString() + "/" + DatapackChooser.getModId() + "/manifest.json");
-                manifestFile.createNewFile();
                 FileWriter writer = new FileWriter(manifestFile);
                 writer.write(gson.toJson(object));
                 writer.flush();
@@ -98,6 +111,8 @@ public class PackManifests {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        });
+
+        }).join();
+        logger.info("Manifests fetched!");
     }
 }

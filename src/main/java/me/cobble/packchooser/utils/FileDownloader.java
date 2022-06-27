@@ -1,11 +1,8 @@
 package me.cobble.packchooser.utils;
 
-import com.google.gson.JsonObject;
-import com.mojang.authlib.yggdrasil.response.Response;
 import me.cobble.packchooser.DatapackChooser;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.realms.Request;
-import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -22,11 +19,13 @@ public class FileDownloader {
     public FileDownloader(HttpClient client) {
         this.client = client;
     }
+    public Logger logger = DatapackChooser.getLogger();
 
     public void downloadDatapack(String url, File location, String fileName) {
         HttpRequest request = HttpRequest.newBuilder(URI.create(url)).build();
 
         client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenApply(HttpResponse::body).thenAccept(body -> {
+            logger.info("Starting Datapack Download...");
             try {
                 File file = new File(location.toString() + "/" + fileName + ".zip");
                 file.createNewFile();
@@ -38,14 +37,15 @@ public class FileDownloader {
                 e.printStackTrace();
             }
         });
+        logger.info("Datapack download complete!");
     }
 
-    public void downloadResourcepack(String url, String worldName) {
+    public void downloadResources(String url, String worldName) {
         if (url.equalsIgnoreCase("")) return;
 
         HttpRequest request = HttpRequest.newBuilder().uri(URI.create(url)).build();
         client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenApply(HttpResponse::body).thenAccept(body -> {
-
+            logger.info("Starting download of resources...");
             try {
                 File file = new File(MinecraftClient.getInstance().runDirectory.toString() + "/saves/" + worldName + "/resources.zip");
                 file.createNewFile();
@@ -58,5 +58,6 @@ public class FileDownloader {
             }
 
         });
+        logger.info("Resources downloaded");
     }
 }

@@ -27,15 +27,23 @@ public class MarketplaceRoot extends LightweightGuiDescription {
     JsonArray manifestCopy = DatapackChooser.getManifest().get("packs").getAsJsonArray();
 
     WGridPanel root = new WGridPanel(GRID_CONSTANT);
+
     public MarketplaceRoot(File file) {
-        detailsPanel.setSize(7 * GRID_CONSTANT, 9 * GRID_CONSTANT);
 
         final WScrollPanel[] scrollPanel = {new WScrollPanel(listFromManifest(root, file, manifestCopy))};
         WButton doneButton = new WButton(ScreenTexts.DONE);
         WButton searchButton = new WButton(new TextureIcon(new Identifier("minecraft", "textures/mob_effect/mining_fatigue.png")));
         WTextField textField = new WTextField(Text.of("Search"));
 
-        doneButton.setOnClick(MarketplaceMenuContainer::closeScreen);
+        doneButton.setOnClick(() -> {
+            if (!MarketplaceMenuContainer.hasShiftDown()) {
+                MarketplaceMenuContainer.closeScreen();
+                return;
+            }
+
+            PackManifests.fetchManifest();
+            scrollPanel[0] = new WScrollPanel(listFromManifest(root, file, manifestCopy));
+        });
 
         textField.setSize(5 * GRID_CONSTANT, GRID_CONSTANT);
         searchButton.setSize(GRID_CONSTANT, GRID_CONSTANT);
@@ -76,7 +84,7 @@ public class MarketplaceRoot extends LightweightGuiDescription {
             JsonObject object = manifest.get(i).getAsJsonObject();
             WButton button = new WButton(Text.of(object.get("name").getAsString()));
             button.setOnClick(() -> packDetails(root, button.getLabel(), file));
-            panel.add(button, 0, i, 8, 1);
+            panel.add(button, 0, i, 7, 1);
         }
         return panel;
     }
@@ -91,10 +99,13 @@ public class MarketplaceRoot extends LightweightGuiDescription {
         DatapackChooser.getManifest().get("packs").getAsJsonArray().forEach(pack -> {
             if (pack.getAsJsonObject().get("name").getAsString().equalsIgnoreCase(name)) {
                 WLabel title = new WLabel(label);
+                WLabel author = new WLabel(Text.of("Made by: " + pack.getAsJsonObject().get("author").getAsString()));
                 WButton download = new WButton(Text.of("↓"));
                 WText text = new WText(Text.of(pack.getAsJsonObject().get("description").getAsString()));
-                text.setColor(0xFFF3F3F3);
+
                 title.setColor(0xFFF3F3F3);
+                author.setColor(0xFFF3F3F3);
+                text.setColor(0xFFF3F3F3);
 
                 download.setAlignment(HorizontalAlignment.CENTER);
                 download.setOnClick(() -> {
@@ -111,7 +122,8 @@ public class MarketplaceRoot extends LightweightGuiDescription {
                 download.addTooltip(new TooltipBuilder().add(Text.of("Click to download the pack!")));
 
                 detailsPanel.add(title, 0, 0, 7, 1);
-                detailsPanel.add(text, 0, 2, 7, 8);
+                detailsPanel.add(author, 0, 1, 7, 1);
+                detailsPanel.add(text, 0, 3, 7, (text.getText().getString().length() / 18) / 2);
                 detailsPanel.add(download, 6, 0, 1, 1);
             }
         });
