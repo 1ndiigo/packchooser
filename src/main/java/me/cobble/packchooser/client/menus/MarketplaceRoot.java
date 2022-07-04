@@ -109,7 +109,7 @@ public class MarketplaceRoot extends LightweightGuiDescription {
 
                 download.setAlignment(HorizontalAlignment.CENTER);
                 download.setOnClick(() -> {
-                    HttpClient client = HttpClient.newHttpClient();
+                    HttpClient client = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.NORMAL).build();
                     try {
                         FileDownloader downloader = new FileDownloader(client);
                         System.out.println(file.toString());

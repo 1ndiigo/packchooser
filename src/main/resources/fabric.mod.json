@@ -3,12 +3,15 @@
   "id": "packchooser",
   "version": "${version}",
   "name": "Pack Chooser",
-  "description": "",
-  "authors": [],
-  "contact": {},
+  "description": "Minecraft Mod that Makes it Easier to Install and Use Datapacks",
+  "authors": ["LegibleSleet827", "Cbble_"],
+  "contact": {
+    "issues": "https://github.com/1ndiigo/pack-chooser/issues",
+    "sources": "https://github.com/1ndiigo/pack-chooser"
+  },
   "license": "MIT",
   "icon": "assets/packchooser/icon.png",
-  "environment": "*",
+  "environment": "client",
   "entrypoints": {
     "client": [
       "me.cobble.packchooser.client.DatapackChooserClient"

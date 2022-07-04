@@ -27,7 +27,7 @@ public abstract class IntegratedServerMixin extends MinecraftServer {
 
     @Inject(at = @At("RETURN"), method = "setupServer")
     private void addResources(CallbackInfoReturnable<Boolean> cir) {
-        FileDownloader downloader = new FileDownloader(HttpClient.newHttpClient());
+        FileDownloader downloader = new FileDownloader(HttpClient.newBuilder().followRedirects(HttpClient.Redirect.NORMAL).build());
         downloader.downloadResources(PackManifests.getByName("More TNT").get("rp_url").getAsString(), this.getSaveProperties().getLevelName());
     }
 }
