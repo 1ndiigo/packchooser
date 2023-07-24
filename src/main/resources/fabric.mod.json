@@ -1,31 +1,39 @@
 {
   "schemaVersion": 1,
-  "id": "packchooser",
+  "id": "datapacker",
   "version": "${version}",
-  "name": "Pack Chooser",
+  "name": "Datapacker",
   "description": "Minecraft Mod that Makes it Easier to Install and Use Datapacks",
-  "authors": ["LegibleSleet827", "Cbble_"],
+  "authors": [
+    "Cbble_"
+  ],
   "contact": {
-    "issues": "https://github.com/1ndiigo/pack-chooser/issues",
-    "sources": "https://github.com/1ndiigo/pack-chooser"
+    "issues": "https://github.com/Datapack-Hub/mod/issues",
+    "sources": "https://github.com/Datapack-Hub/mod"
   },
   "license": "MIT",
-  "icon": "assets/packchooser/icon.png",
+  "icon": "assets/datapacker/icon.png",
   "environment": "client",
   "entrypoints": {
     "client": [
-      "me.cobble.packchooser.client.DatapackChooserClient"
+      {
+        "adapter": "kotlin",
+        "value": "net.datapackhub.datapacker.client.DatapackChooserClient"
+      }
     ],
     "main": [
-      "me.cobble.packchooser.DatapackChooser"
+      {
+        "adapter": "kotlin",
+        "value": "net.datapackhub.datapacker.DatapackChooser"
+      }
     ]
   },
   "mixins": [
     "DatapackChooser.mixins.json"
   ],
   "depends": {
-    "fabricloader": ">=0.14.8",
+    "fabricloader": ">=0.14.21",
     "fabric": "*",
-    "minecraft": "1.19"
+    "minecraft": "1.20.x"
   }
 }

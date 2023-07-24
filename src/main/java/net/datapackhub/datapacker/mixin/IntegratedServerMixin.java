@@ -1,8 +1,8 @@
-package me.cobble.packchooser.mixin;
+package net.datapackhub.datapacker.mixin;
 
 import com.mojang.datafixers.DataFixer;
 import me.cobble.packchooser.utils.FileDownloader;
-import me.cobble.packchooser.utils.PackManifests;
+import net.datapackhub.datapacker.utils.Manifests;
 import net.minecraft.resource.ResourcePackManager;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.SaveLoader;
@@ -24,10 +24,10 @@ public abstract class IntegratedServerMixin extends MinecraftServer {
     public IntegratedServerMixin(Thread serverThread, LevelStorage.Session session, ResourcePackManager dataPackManager, SaveLoader saveLoader, Proxy proxy, DataFixer dataFixer, ApiServices apiServices, WorldGenerationProgressListenerFactory worldGenerationProgressListenerFactory) {
         super(serverThread, session, dataPackManager, saveLoader, proxy, dataFixer, apiServices, worldGenerationProgressListenerFactory);
     }
-
-    @Inject(at = @At("RETURN"), method = "setupServer")
-    private void addResources(CallbackInfoReturnable<Boolean> cir) {
-        FileDownloader downloader = new FileDownloader(HttpClient.newBuilder().followRedirects(HttpClient.Redirect.NORMAL).build());
-        downloader.downloadResources(PackManifests.getByName("More TNT").get("rp_url").getAsString(), this.getSaveProperties().getLevelName());
-    }
+//
+//    @Inject(at = @At("RETURN"), method = "setupServer")
+//    private void addResources(CallbackInfoReturnable<Boolean> cir) {
+//        FileDownloader downloader = new FileDownloader(HttpClient.newBuilder().followRedirects(HttpClient.Redirect.NORMAL).build());
+//        downloader.downloadResources(Manifests.INSTANCE..getByName("More TNT").get("rp_url").getAsString(), this.getSaveProperties().getLevelName());
+//    }
 }
